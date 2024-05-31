@@ -22,7 +22,7 @@ public class implementacionChat extends UnicastRemoteObject implements chatServi
             a++;
         }
     }
-    public String entradaCliente(int[]arr, int inicio, int fin, char metodo) throws RemoteException {
+    public String entradaCliente(int[]arr, int inicio, int fin, int metodo) throws RemoteException {
         int a = 0;
         StringBuilder respuesta = new StringBuilder();
         while (a < clientes.size()) {

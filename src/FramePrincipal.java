@@ -5,13 +5,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.*;
+import java.util.random.RandomGenerator;
 
 public class FramePrincipal extends JFrame implements ActionListener {
     private JButton button1;
     private JButton button2;
     private JButton button3;
-    private JButton button4;
     private JTextField textField;
     private JLabel label;
     private JLabel label2;
@@ -26,10 +27,15 @@ public class FramePrincipal extends JFrame implements ActionListener {
     private JScrollPane scrollPane2;
     private int[] arr;
     private int[] originalArray;
+    private final String nom;
+    private Registry rmii;
+    private chatServidor servidor;
 
     private static final int THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
 
-    public FramePrincipal() {
+    public FramePrincipal() throws RemoteException, NotBoundException {
+        rmii = LocateRegistry.getRegistry("localhost", 3000);
+        servidor = (chatServidor) rmii.lookup("Chat");
         txtAFirstArray = new JTextArea(200,200);
         button3 = new JButton("Generar array");
         txtAFirstArray.setLineWrap(true);
@@ -84,7 +90,7 @@ public class FramePrincipal extends JFrame implements ActionListener {
         button1.addActionListener(this);
         button2.addActionListener(this);
         button3.addActionListener(this);
-
+        nom = "Cliente " + RandomGenerator.getDefault().nextInt(0, 100);
     }
 
     @Override
@@ -104,34 +110,32 @@ public class FramePrincipal extends JFrame implements ActionListener {
             txtAFirstArray.setText("Primer array: " + firstArrayText);
             final long startTime = System.currentTimeMillis();
             var option = group.getSelection();
+            int optionNumberSelected = 0;
             if (option == radioSecuencial.getModel()) {
                 //MergeSort.divide(arr, 0, arr.length - 1);
-                try{
-                    String res = sendToServer(arr, 0, arr.length - 1);
-                    txtAResults.setText(res);
-                    System.out.println("Resultado: " + res + " en el cliente");
-                }catch (RemoteException | NotBoundException ex){
-                    ex.printStackTrace();
-                } catch (ExecutionException ex) {
-                    throw new RuntimeException(ex);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
+                optionNumberSelected = 1;
                 System.out.println("Secuencial");
             } else if (option == radioExecutor.getModel()) {
                 //MergeSortExecutor.divide(arr, 0, arr.length - 1);
                 System.out.println("Executor");
             } else if (option == radioForkJoin.getModel()) {
-                ForkJoinPool pool = new ForkJoinPool();
-                pool.invoke(new MergeSortTask(arr, 0, arr.length - 1));
+                optionNumberSelected = 3;
                 System.out.println("ForkJoin");
             } else {
-                //MergeSort.divide(arr, 0, arr.length - 1);
                 System.out.println("Secuencial");
             }
-            String result = Arrays.toString(arr);
+            try{
+                String res = sendToServer(arr, 0, arr.length - 1, optionNumberSelected);
+                //txtAResults.setText(res);
+                //System.out.println("Resultado: " + res + " en el cliente");
+            }catch (RemoteException | NotBoundException ex){
+                ex.printStackTrace();
+            } catch (ExecutionException | InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            //String result = Arrays.toString(arr);
             final long endTime = System.currentTimeMillis();
-            //txtAResults.setText("Resultado: " + result);
+
             System.out.println("Time taken: " + (endTime - startTime) + " milliseconds");
             label.setText("Resultado: " + (endTime - startTime) + " milliseconds");
         }
@@ -161,18 +165,23 @@ public class FramePrincipal extends JFrame implements ActionListener {
         }
         return arr;
     }
-    public String sendToServer(int[] arr, int startingIndex, int endingIndex) throws RemoteException, NotBoundException, ExecutionException, InterruptedException {
-        String nom = "Alex";
-        Registry rmii = LocateRegistry.getRegistry("localhost", 3000);
-        chatServidor servidor = (chatServidor) rmii.lookup("Chat");
+    public String sendToServer(int[] arr, int startingIndex, int endingIndex, int metodo) throws RemoteException, NotBoundException, ExecutionException, InterruptedException {
         implementacionClienteChat task = new implementacionClienteChat(arr, startingIndex, endingIndex, servidor);
+        task.setNombre(nom);
+        task.setMetodo(metodo);
+        task.setTextAreaResults(txtAResults);
+        task.setTextAreaOrigin(txtAFirstArray);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<String> future = (Future<String>) executorService.submit(task);
-        System.out.println("Resultado: " + future.get() + " en el cliente");
+        Future<String> future = executorService.submit(task);
+        //System.out.println("Resultado: " + future.get() + " en el cliente");
         return future.get();
     }
     public static void main(String[] args) {
-        FramePrincipal frame = new FramePrincipal();
-        frame.setVisible(true);
+        try{
+            FramePrincipal frame = new FramePrincipal();
+            frame.setVisible(true);
+        }catch (RemoteException | NotBoundException e){
+            e.printStackTrace();
+        }
     }
 }
