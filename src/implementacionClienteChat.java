@@ -50,11 +50,12 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
     @Override
     public String entradaCliente(int[] arr, int inicio, int fin, int metodo) throws RemoteException {
         textAreaOrigin.append("Array antes de ordenar para cliente: "+nombre + "\n" + Arrays.toString(arr));
+        textAreaOrigin.append("\n\n");
         String respuesta = "";
         if(metodo == 1){
             MergeSort.divide(arr, inicio, fin);
         } else if (metodo == 2) {
-            //MergeSortExecutor.divide(arr, inicio, fin);
+            MergeSortExecutor.divide(arr, inicio, fin);
         } else if (metodo == 3) {
             ForkJoinPool pool = new ForkJoinPool();
             pool.invoke(new MergeSortTask(arr, inicio, fin));
@@ -82,7 +83,7 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
             try {
                 //servidor.mensaje(nombre + " dice: " + mensaje);
                 //servidor.entradaCliente(arr, inicio, fin, (char)1);
-                return servidor.entradaCliente(arr, inicio, fin, (char)1);
+                return servidor.entradaCliente(arr, inicio, fin, metodo);
             } catch (RemoteException e) {
                 System.out.println("Excepcion en implementacionClienteChat: " + e);
                 e.printStackTrace();
