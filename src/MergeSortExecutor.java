@@ -7,8 +7,8 @@ public class MergeSortExecutor{
         if(startingIndex < endingIndex){
             ExecutorService ex = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             int middleIndex = (startingIndex + endingIndex) / 2;
-            ex.execute(()->divide(arr, startingIndex, middleIndex));
-            ex.execute(()->divide(arr, middleIndex + 1, endingIndex));
+            ex.execute(()->MergeSort.divide(arr, startingIndex, middleIndex));
+            ex.execute(()->MergeSort.divide(arr, middleIndex + 1, endingIndex));
             ex.shutdown();
             try{
                 ex.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
