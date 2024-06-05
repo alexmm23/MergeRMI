@@ -38,6 +38,7 @@ public class FramePrincipal extends JFrame implements ActionListener {
     public FramePrincipal() throws RemoteException, NotBoundException {
         rmii = LocateRegistry.getRegistry("localhost", 3000);
         servidor = (chatServidor) rmii.lookup("Chat");
+        implementacionClienteChat.getInstance(new int[]{1, 2}, 0, 1, servidor, nom);
         resultadoExecutor = new JLabel("Resultado Executor");
         resultadoExecutor.setBounds(350, 290, 200, 30);
         resultadoSecuencial = new JLabel("Resultado Secuencial");

@@ -67,7 +67,7 @@ public final class implementacionClienteChat extends UnicastRemoteObject impleme
         if(metodo == 1){
             MergeSort.divide(arr, inicio, fin);
         } else if (metodo == 2) {
-            MergeSortExecutor.sort(arr);
+            MergeSortExecutor.divide(arr, inicio, fin);
         } else if (metodo == 3) {
             ForkJoinPool pool = new ForkJoinPool();
             pool.invoke(new MergeSortTask(arr, inicio, fin));
