@@ -27,20 +27,27 @@ public class FramePrincipal extends JFrame implements ActionListener {
     private JScrollPane scrollPane2;
     private int[] arr;
     private int[] originalArray;
-    private final String nom;
+    private String nom;
     private Registry rmii;
     private chatServidor servidor;
-
-    private static final int THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+    private JLabel resultadoSecuencial;
+    private JLabel resultadoExecutor;
+    private JLabel resultadoForkJoin;
+    private implementacionClienteChat task;
 
     public FramePrincipal() throws RemoteException, NotBoundException {
         rmii = LocateRegistry.getRegistry("localhost", 3000);
         servidor = (chatServidor) rmii.lookup("Chat");
+        resultadoExecutor = new JLabel("Resultado Executor");
+        resultadoExecutor.setBounds(350, 290, 200, 30);
+        resultadoSecuencial = new JLabel("Resultado Secuencial");
+        resultadoSecuencial.setBounds(350, 230, 200, 30);
+        resultadoForkJoin = new JLabel("Resultado ForkJoin");
+        resultadoForkJoin.setBounds(350, 350, 200, 30);
         txtAFirstArray = new JTextArea(200,200);
         button3 = new JButton("Generar array");
         txtAFirstArray.setLineWrap(true);
         txtAResults = new JTextArea(200,200);
-        //txtAResults.setBounds(300, 30, 200, 200);
         txtAResults.setLineWrap(true);
         scrollPane = new JScrollPane(txtAFirstArray);
         scrollPane.setBounds(50, 30, 200, 200);
@@ -61,8 +68,6 @@ public class FramePrincipal extends JFrame implements ActionListener {
         button2 = new JButton("Borrar");
         button2.setBounds(150, 350, 95, 30);
         button3.setBounds(50, 250, 200, 30);
-        label = new JLabel("Resultado:");
-        label.setBounds(200, 500, 200, 30);
         label2 = new JLabel("Array Original");
         label2.setBounds(50, 0, 200, 30);
         label3 = new JLabel("Array Ordenado");
@@ -73,11 +78,11 @@ public class FramePrincipal extends JFrame implements ActionListener {
         add(button2);
         add(button3);
         add(textField);
-        add(label);
         add(label2);
         add(label3);
-        //add(txtAResults);
-        //add(txtAFirstArray);
+        add(resultadoExecutor);
+        add(resultadoSecuencial);
+        add(resultadoForkJoin);
         add(scrollPane);
         add(scrollPane2);
         add(radioSecuencial);
@@ -91,6 +96,7 @@ public class FramePrincipal extends JFrame implements ActionListener {
         button2.addActionListener(this);
         button3.addActionListener(this);
         nom = "Cliente " + RandomGenerator.getDefault().nextInt(0, 100);
+        //task = implementacionClienteChat.getInstance(new int[]{1, 2}, 0, 1, servidor, nom);
     }
 
     @Override
@@ -112,11 +118,10 @@ public class FramePrincipal extends JFrame implements ActionListener {
             var option = group.getSelection();
             int optionNumberSelected = 0;
             if (option == radioSecuencial.getModel()) {
-                //MergeSort.divide(arr, 0, arr.length - 1);
                 optionNumberSelected = 1;
                 System.out.println("Secuencial");
             } else if (option == radioExecutor.getModel()) {
-                //MergeSortExecutor.divide(arr, 0, arr.length - 1);
+                optionNumberSelected = 2;
                 System.out.println("Executor");
             } else if (option == radioForkJoin.getModel()) {
                 optionNumberSelected = 3;
@@ -133,16 +138,29 @@ public class FramePrincipal extends JFrame implements ActionListener {
             } catch (ExecutionException | InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            //String result = Arrays.toString(arr);
+            switch (optionNumberSelected){
+                case 1:
+                    resultadoSecuencial.setText("Resultado Secuencial: " + (System.currentTimeMillis() - startTime) + " ms");
+                    break;
+                case 2:
+                    resultadoExecutor.setText("Resultado Executor: " + (System.currentTimeMillis() - startTime) + " ms");
+                    break;
+                case 3:
+                    resultadoForkJoin.setText("Resultado ForkJoin: " + (System.currentTimeMillis() - startTime) + " ms");
+                    break;
+            }
             final long endTime = System.currentTimeMillis();
 
             System.out.println("Time taken: " + (endTime - startTime) + " milliseconds");
-            label.setText("Resultado: " + (endTime - startTime) + " milliseconds");
+            //label.setText("Resultado: " + (endTime - startTime) + " milliseconds");
         }
         if (e.getSource() == button2) {
             txtAResults.setText("");
             txtAFirstArray.setText("");
             textField.setText("");
+            resultadoExecutor.setText("Resultado Executor");
+            resultadoSecuencial.setText("Resultado Secuencial");
+            resultadoForkJoin.setText("Resultado ForkJoin");
             arr = null;
             originalArray = null;
         }
@@ -155,7 +173,7 @@ public class FramePrincipal extends JFrame implements ActionListener {
             originalArray = getRandomArray(n);
             arr = Arrays.copyOf(originalArray, originalArray.length);
             String firstArrayText = Arrays.toString(originalArray);
-            txtAFirstArray.setText("Primer array: " + firstArrayText);
+            txtAFirstArray.setText("Array generado: " + firstArrayText + "\n");
         }
     }
     public int[] getRandomArray(int tam){
@@ -166,8 +184,8 @@ public class FramePrincipal extends JFrame implements ActionListener {
         return arr;
     }
     public String sendToServer(int[] arr, int startingIndex, int endingIndex, int metodo) throws RemoteException, NotBoundException, ExecutionException, InterruptedException {
-        implementacionClienteChat task = new implementacionClienteChat(arr, startingIndex, endingIndex, servidor);
-        task.setNombre(nom);
+        task = implementacionClienteChat.getInstance(arr, startingIndex, endingIndex, servidor, nom);
+        //task.setNombre(nom);
         task.setMetodo(metodo);
         task.setTextAreaResults(txtAResults);
         task.setTextAreaOrigin(txtAFirstArray);

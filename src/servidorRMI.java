@@ -8,7 +8,6 @@ public class servidorRMI {
             Registry rmi = LocateRegistry.createRegistry(3000);
             rmi.rebind("Chat", (Remote) new implementacionChat());
             System.out.println("Servidor RMI listo");
-
         } catch (Exception e) {
             System.out.println("Excepcion en servidorRMI: " + e);
             e.printStackTrace();

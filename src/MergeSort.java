@@ -2,20 +2,6 @@ public class MergeSort {
     public static void divide(int[] arr, int startingIndex,int endingIndex){
         if(startingIndex<endingIndex) {
             int middleIndex = (startingIndex + endingIndex) / 2;
-            //Se divide con los indices del array, se marcan los limites de la division
-            //Impresion de debug
-            /*System.out.println("Array divided into two parts: ");
-            System.out.println("First part: ");
-            for(int i=startingIndex;i<=middleIndex;i++){
-                System.out.print(arr[i]+" ");
-            }
-            System.out.println();
-            System.out.println("Second part: ");
-            for(int i=middleIndex+1;i<=endingIndex;i++){
-                System.out.print(arr[i]+" ");
-            }
-            System.out.println();
-            */
             divide(arr, startingIndex, middleIndex);
             divide(arr, middleIndex + 1, endingIndex);
             //Cuando se llega a la ultima division, se llama a la funcion merge para unir de abajo hacia arriba

@@ -6,12 +6,14 @@ public class implementacionChat extends UnicastRemoteObject implements chatServi
     public ArrayList<chatCliente> clientes;
     public implementacionChat() throws RemoteException {
         //super();
-        clientes = new ArrayList<chatCliente>();
+        clientes = new ArrayList<>();
     }
 
     @Override
     public void registro(chatCliente cliente) throws RemoteException {
         clientes.add(cliente);
+        System.out.println("Cliente registrado: " +  cliente.getNombre());
+        System.out.println("Clientes conectados: " + clientes.size());
     }
 
     @Override
@@ -26,7 +28,9 @@ public class implementacionChat extends UnicastRemoteObject implements chatServi
         int a = 0;
         StringBuilder respuesta = new StringBuilder();
         while (a < clientes.size()) {
+            clientes.get(a).setNombre(clientes.get(a).getNombre());
             respuesta.append(clientes.get(a).entradaCliente(arr, inicio, fin, metodo));
+            //System.out.println("Clite: "+clientes.get(a).getNombre);
             a++;
         }
         return respuesta.toString();

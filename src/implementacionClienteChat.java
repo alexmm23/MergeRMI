@@ -3,10 +3,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.*;
 
-public class implementacionClienteChat extends UnicastRemoteObject implements chatCliente, Callable<String> {
+public final class implementacionClienteChat extends UnicastRemoteObject implements chatCliente, Callable<String> {
     public chatServidor servidor;
     public String nombre  = null;
     public int[] arr ;
@@ -15,18 +14,31 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
     public int metodo;
     public JTextArea textAreaResults;
     public JTextArea textAreaOrigin;
+    private static implementacionClienteChat instance = null;
 
-    implementacionClienteChat(String nombre, chatServidor servidor) throws RemoteException {
+    private implementacionClienteChat(String nombre, chatServidor servidor) throws RemoteException {
         this.nombre = nombre;
         this.servidor = servidor;
         servidor.registro(this);
     }
-    implementacionClienteChat(int[] arr,int inicio, int fin,  chatServidor servidor) throws RemoteException {
+    private implementacionClienteChat(int[] arr,int inicio, int fin,  chatServidor servidor, String nombre) throws RemoteException {
         this.arr = arr;
         this.servidor = servidor;
         this.inicio = inicio;
         this.fin = fin;
+        this.nombre = nombre;
         servidor.registro(this);
+    }
+    public static implementacionClienteChat getInstance(int[] arr, int inicio, int fin, chatServidor servidor, String nombre) throws RemoteException {
+        if(instance == null){
+            instance = new implementacionClienteChat(arr, inicio, fin, servidor, nombre);
+        }else{
+            instance.arr = arr;
+            instance.inicio = inicio;
+            instance.fin = fin;
+            instance.nombre = nombre;
+        }
+        return instance;
     }
     @Override
     public void mensajeCliente(String mensaje) throws RemoteException{
@@ -55,14 +67,14 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
         if(metodo == 1){
             MergeSort.divide(arr, inicio, fin);
         } else if (metodo == 2) {
-            MergeSortExecutor.divide(arr, inicio, fin);
+            MergeSortExecutor.sort(arr);
         } else if (metodo == 3) {
             ForkJoinPool pool = new ForkJoinPool();
             pool.invoke(new MergeSortTask(arr, inicio, fin));
         } else {
             MergeSort.divide(arr, inicio, fin);
         }
-        respuesta += "Cliente " + nombre + " dice: ";
+        respuesta += "Array ordenado para cliente: "+nombre + "\n";
         for(int i = inicio; i <= fin; i++){
             System.out.print(arr[i] + " ");
             respuesta += arr[i] + " ";
@@ -72,6 +84,11 @@ public class implementacionClienteChat extends UnicastRemoteObject implements ch
         textAreaResults.append("\n\n");
         return respuesta;
 
+    }
+
+    @Override
+    public String getNombre() throws RemoteException {
+        return this.nombre;
     }
 
     @Override
